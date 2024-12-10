@@ -1,9 +1,45 @@
 <html>
+
 <head>
-    <title>SheetDB</title>
+  <title>SheetDB</title>
+  <script type="module">
+    import '/scripts/components.js';
+    import { init } from '/scripts/sheetdb.js';
+    import { shareSheet } from '/scripts/shareable.js';
+
+    const db = await init((indexedDB) => {
+      if (!indexedDB.objectStoreNames.contains('sheets')) {
+        indexedDB.createObjectStore('sheets', { keyPath: 'id' });
+      }
+    });
+
+    const sheetStore = await db.get("sheets");
+    const sheets = await sheetStore.getAllRows();
+    shareSheet('sheets', sheets);
+
+    document.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const name = formData.get('name');
+
+      const sheet = db.createSheet(name);
+      sheetStore.addRow({ name: name }, name);
+      form.reset();
+    }
+    );
+  </script>
 </head>
+
 <body>
-    <h1>Home</h1>
-    <p>Welcome to the home page.</p>
+  <h1>Home</h1>
+  <p>Welcome to the home page.</p>
+  <sheet-list></sheet-list>
+  <hr>
+  <form>
+    <input type="text" name="name" placeholder="Sheet Name" required>
+    <input type="submit" value="Create Sheet">
+  </form>
 </body>
+
 </html>
