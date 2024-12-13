@@ -8,7 +8,6 @@ class SheetList extends HTMLElement {
     this.sheets = [];
     
     getSharedSheet('sheets', (data) => {
-      console.log('SheetList received data:', data);
       this.sheets = data;
       this.render();
     });
@@ -41,7 +40,7 @@ class SheetList extends HTMLElement {
     this.container.innerHTML = `
       <h1>Sheet List(${this.sheets.length})</h1>
       <ul>
-        ${this.sheets.map(sheet => `<li>${sheet.name}</li>`).join('')}
+        ${this.sheets.map(sheet => `<li><a href="/sheet/?id=${sheet.id}">${sheet.name}</a></li>`).join('')}
       </ul>
     `;
     this.appendChild(this.container);

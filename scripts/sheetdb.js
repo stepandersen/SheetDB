@@ -1,5 +1,6 @@
 const dbName = 'SheetDB';
-const version = 2;
+let version;
+let isUpgrading = false;
 
 function generateUniqueKey(prefix = 'row') {
   const timestamp = Date.now();
@@ -7,8 +8,32 @@ function generateUniqueKey(prefix = 'row') {
   return `${prefix}-${timestamp}-${random}`;
 }
 
+async function getVersion(dbName) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(dbName); // Open without specifying a version
+
+    request.onsuccess = () => {
+      const db = request.result;
+      const version = db.version; // Get the current version
+      db.close(); // Close the connection to avoid conflicts
+      resolve(version);
+    };
+
+    request.onerror = () => reject(request.error);
+    request.onupgradeneeded = () => {
+      // If this runs, the database is being created for the first time
+      const db = request.result;
+      const version = db.version; // This will be 1 for a new database
+      db.close();
+      resolve(version);
+    };
+  });
+}
+
 // Helper function to open the database
 async function open(upgradeCallback) {
+  version = await getVersion(dbName);
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, version);
 
@@ -24,10 +49,61 @@ async function open(upgradeCallback) {
   });
 }
 
-class Sheet {
+export async function init(upgradeCallback) {
+  const db = await open(upgradeCallback);
+  version = db.version; // Update the version for future connections
+
+  return new DbContext(db);
+}
+
+class DbContext {
+  constructor(db) {
+    this.db = db;
+  }
+
+  async get(storeName) {
+    if (!this.db.objectStoreNames.contains(storeName)) {
+      throw new Error(`Store "${storeName}" does not exist.`);
+    }
+    return new Store(this.db, storeName);
+  }
+
+  async createStore(storeName) {
+    if (isUpgrading) {
+      throw new Error("Database is being upgraded, please wait.");
+    }
+
+    console.log("Creating store", storeName);
+
+    isUpgrading = true; // Set the lock
+
+    try {
+      version = this.db.version + 1;
+
+      // Use the existing `open` function, passing an upgrade callback
+      this.db = await open((db) => {
+        console.log("DB Opened", db.objectStoreNames);
+
+        if (!db.objectStoreNames.contains(storeName)) {
+          db.createObjectStore(storeName, { keyPath: 'id' });
+          console.log(`Store "${storeName}" created successfully.`);
+        }
+      });
+
+      isUpgrading = false; // Release the lock
+      return new Store(this.db, storeName);
+    } catch (error) {
+      isUpgrading = false; // Release the lock on error
+      throw error;
+    }
+  }
+}
+
+class Store {
   constructor(db, storeName) {
     this.db = db;
     this.storeName = storeName;
+    this.mq = new MessageQueue();
   }
 
   async getRow(key) {
@@ -45,7 +121,10 @@ class Sheet {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(this.storeName, 'readwrite');
       const store = transaction.objectStore(this.storeName);
-      const request = store.add({ ...data, id: key });
+      const obj = { ...data, id: key };
+      const request = store.add(obj);
+
+      this.mq.emit('added', obj);
 
       request.onsuccess = () => resolve(key);
       request.onerror = () => reject(request.error);
@@ -86,42 +165,25 @@ class Sheet {
   }
 }
 
-class DB {
-  constructor(db) {
-    this.db = db;
+class MessageQueue {
+  constructor() {
+    this.events = {};
   }
 
-  async get(sheetName) {
-    if (!this.db.objectStoreNames.contains(sheetName)) {
-      throw new Error(`Sheet "${sheetName}" does not exist.`);
+  subscribe(event, listener) {
+    if (!this.events[event]) {
+      this.events[event] = [];
     }
-    return new Sheet(this.db, sheetName);
+    this.events[event].push(listener);
   }
 
-  async createSheet(sheetName) {
-    return new Promise((resolve, reject) => {
-      version = this.db.version + 1;
-      this.db.close();
-      const request = indexedDB.open(dbName, version);
-
-      request.onupgradeneeded = (event) => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(sheetName)) {
-          db.createObjectStore(sheetName, { keyPath: 'id' });
-        }
-      };
-
-      request.onsuccess = () => {
-        this.db = request.result;
-        resolve(new Sheet(this.db, sheetName));
-      };
-
-      request.onerror = () => reject(request.error);
-    });
+  unsubscribe(event, listener) {
+    if (!this.events[event]) return;
+    this.events[event] = this.events[event].filter(l => l !== listener);
   }
-}
 
-export async function init(upgradeCallback) {
-  const db = await open(upgradeCallback);
-  return new DB(db);
+  emit(event, data) {
+    if (!this.events[event]) return;
+    this.events[event].forEach(listener => listener(data));
+  }
 }

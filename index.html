@@ -23,7 +23,7 @@
       const formData = new FormData(form);
       const name = formData.get('name');
 
-      const sheet = db.createSheet(name);
+      const sheet = db.createStore(name);
       sheetStore.addRow({ name: name }, name);
       form.reset();
     }

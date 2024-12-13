@@ -1,0 +1,81 @@
+<html data-bs-theme="dark">
+
+<head>
+  <title>SheetDB</title>
+  <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
+  <script type="module">
+    import '/scripts/components.js';
+    import { init } from '/scripts/sheetdb.js';
+    import { shareSheet } from '/scripts/shareable.js';
+
+    // get queryParam sheet else redirect to /
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    if (!id)
+      window.location.href = '/';
+
+    document.querySelectorAll('[sheet-id]').forEach(e => e.textContent = id);
+    const table = document.querySelector('table[is="x-sheet"]');
+
+    table.populate({
+      headers: [
+        { key: "Name", label: "Name" },
+        { key: "Age", label: "Age" },
+        { key: "Role", label: "Role" },
+        { key: "Department", label: "Department" },
+        { key: "Salary", label: "Salary" },
+        { key: "Location", label: "Location" },
+        { key: "Experience", label: "Experience" },
+        { key: "Status", label: "Status" }
+      ],
+      body: [
+        { Name: "Alice", Age: 30, Role: "Engineer", Department: "Tech", Salary: 85000, Location: "New York", Experience: 5, Status: "Active" },
+        { Name: "Bob", Age: 25, Role: "Designer", Department: "Creative", Salary: 65000, Location: "San Francisco", Experience: 2, Status: "Active" },
+        { Name: "Charlie", Age: 35, Role: "Manager", Department: "Operations", Salary: 95000, Location: "Chicago", Experience: 10, Status: "Active" },
+        { Name: "Diana", Age: 28, Role: "Analyst", Department: "Finance", Salary: 72000, Location: "New York", Experience: 3, Status: "Active" },
+        { Name: "Ethan", Age: 32, Role: "Consultant", Department: "Tech", Salary: 87000, Location: "Austin", Experience: 6, Status: "Active" },
+        { Name: "Fiona", Age: 29, Role: "HR Specialist", Department: "Human Resources", Salary: 60000, Location: "Boston", Experience: 4, Status: "Active" },
+        { Name: "George", Age: 40, Role: "Director", Department: "Tech", Salary: 120000, Location: "Seattle", Experience: 15, Status: "Active" },
+        { Name: "Hannah", Age: 27, Role: "Marketing Lead", Department: "Marketing", Salary: 75000, Location: "Los Angeles", Experience: 5, Status: "Active" },
+        { Name: "Ian", Age: 24, Role: "Intern", Department: "Tech", Salary: 35000, Location: "San Francisco", Experience: 0, Status: "Intern" },
+        { Name: "Julia", Age: 31, Role: "Product Manager", Department: "Product", Salary: 92000, Location: "Chicago", Experience: 7, Status: "Active" },
+        { Name: "Kevin", Age: 38, Role: "Architect", Department: "Tech", Salary: 110000, Location: "Denver", Experience: 12, Status: "Active" },
+        { Name: "Laura", Age: 26, Role: "Content Creator", Department: "Creative", Salary: 57000, Location: "Miami", Experience: 2, Status: "Active" },
+        { Name: "Martin", Age: 34, Role: "Scrum Master", Department: "Agile", Salary: 87000, Location: "Portland", Experience: 8, Status: "Active" },
+        { Name: "Nina", Age: 29, Role: "UX Designer", Department: "Creative", Salary: 75000, Location: "New York", Experience: 5, Status: "Active" },
+        { Name: "Oscar", Age: 41, Role: "VP of Tech", Department: "Tech", Salary: 150000, Location: "San Francisco", Experience: 18, Status: "Active" },
+        { Name: "Paula", Age: 33, Role: "Researcher", Department: "R&D", Salary: 89000, Location: "Boston", Experience: 6, Status: "Active" },
+        { Name: "Quincy", Age: 37, Role: "Engineer", Department: "Tech", Salary: 94000, Location: "Austin", Experience: 9, Status: "Active" },
+        { Name: "Rachel", Age: 30, Role: "Data Scientist", Department: "Data", Salary: 98000, Location: "Seattle", Experience: 7, Status: "Active" },
+        { Name: "Steve", Age: 28, Role: "Support Lead", Department: "Customer Service", Salary: 62000, Location: "Chicago", Experience: 3, Status: "Active" },
+        { Name: "Tina", Age: 36, Role: "Sales Manager", Department: "Sales", Salary: 88000, Location: "Los Angeles", Experience: 10, Status: "Active" }
+      ]
+    });
+
+  </script>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <header>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Sheets</a></li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <span sheet-id></span>
+          </li>
+        </ol>
+      </nav>
+      <h1>Sheet <span sheet-id></span></h1>
+      <!-- tabs -->
+    </header>
+    <main>
+      <table is="x-sheet"></table>
+    </main>
+    <footer>
+      <p>SheetDB</p>
+    </footer>
+  </div>
+</body>
+
+</html>
