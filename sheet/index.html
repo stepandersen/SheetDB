@@ -17,8 +17,11 @@
     document.querySelectorAll('[sheet-id]').forEach(e => e.textContent = id);
     const table = document.querySelector('table[is="x-sheet"]');
 
-    table.populate({
-      headers: [
+    const refs = table.populate({
+      sheet: {
+        id
+      },
+      columns: [
         { key: "Name", label: "Name" },
         { key: "Age", label: "Age" },
         { key: "Role", label: "Role" },
@@ -28,7 +31,7 @@
         { key: "Experience", label: "Experience" },
         { key: "Status", label: "Status" }
       ],
-      body: [
+      rows: [
         { Name: "Alice", Age: 30, Role: "Engineer", Department: "Tech", Salary: 85000, Location: "New York", Experience: 5, Status: "Active" },
         { Name: "Bob", Age: 25, Role: "Designer", Department: "Creative", Salary: 65000, Location: "San Francisco", Experience: 2, Status: "Active" },
         { Name: "Charlie", Age: 35, Role: "Manager", Department: "Operations", Salary: 95000, Location: "Chicago", Experience: 10, Status: "Active" },
@@ -52,6 +55,11 @@
       ]
     });
 
+    console.log(refs);
+    
+    document.querySelector("button").addEventListener("click", () => {
+      refs[0].Age.value +=1;
+    });
   </script>
 </head>
 
@@ -73,7 +81,7 @@
       <table is="x-sheet"></table>
     </main>
     <footer>
-      <p>SheetDB</p>
+      <button class="btn btn-primary" type="button">Add +1</button>
     </footer>
   </div>
 </body>

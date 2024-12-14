@@ -2,12 +2,13 @@ class SheetTable extends HTMLTableElement {
   constructor() {
     super(); // Call the parent constructor
 
+    this.rowRefs = [];
     this.thead = this.createTHead();
     this.tbody = this.createTBody();
     this.tfoot = this.createTFoot();
-    const caption = this.createCaption();
-    caption.textContent = "Custom Table Caption";
-    this.classList.add('table');
+    // const caption = this.createCaption();
+    // caption.textContent = "Custom Table Caption";
+    this.classList.add('table', 'p-0');
   }
 
   // Connected lifecycle callback
@@ -20,26 +21,27 @@ class SheetTable extends HTMLTableElement {
     console.log('CustomTable removed from the DOM.');
   }
 
-  // Example: Add a method to populate rows
-  populate(data) {
-    const { headers, body } = data;
+  populate({ sheet, columns, rows }) {
 
-    const headRow = document.createElement('tr');
+    const $tr = document.createElement('tr');
 
-    if (headers.length > 0) {
-      headers.forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header.label;
-        headRow.appendChild(th);
+    if (columns.length > 0) {
+      columns.forEach(column => {
+        const $th = document.createElement('th');
+        $th.classList.add('px-3', 'py-2');
+        $th.textContent = column.label;
+        $tr.appendChild($th);
       });
-      this.thead.appendChild(headRow);
+      this.thead.appendChild($tr);
 
-      body.forEach(rowData => {
-        const row = document.createElement('tr', { is: 'x-row' });
-        row.populate(headers, rowData);
-        this.tbody.appendChild(row);
+      rows.forEach(row => {
+        const $tr = document.createElement('tr', { is: 'x-row' });
+        this.rowRefs.push($tr.populate({ sheet, columns, row }));
+        this.tbody.appendChild($tr);
       });
     }
+
+    return this.rowRefs;
   }
 }
 
