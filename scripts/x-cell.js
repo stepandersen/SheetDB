@@ -1,3 +1,5 @@
+import { createFormControl } from "/scripts/DOM.js"
+
 class SheetCell extends HTMLTableCellElement {
   constructor() {
     super();
@@ -13,11 +15,18 @@ class SheetCell extends HTMLTableCellElement {
     this.sheet = sheet;
     this.column = column;
     this.value = value;
-    
-    this.innerHTML = `
-      <input type="text" value="${value}" data-key="${column.key}" class="form-control" />`;
 
-    const $input = this.querySelector("input");
+    const template = createFormControl(column, value);
+
+    this.appendChild(template);
+
+    const $input = this.querySelector("input, select, textarea");
+
+    // if($input)
+    //   $input.addEventListener('change', (e) => {
+    //     this.column.onChange(column.key, e.target.value, this.value);
+    //     this.value = e.target.value;
+    //   });
 
     return {
       get $el() {

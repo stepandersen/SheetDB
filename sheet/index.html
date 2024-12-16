@@ -23,12 +23,12 @@
       },
       columns: [
         { key: "Name", label: "Name" },
-        { key: "Age", label: "Age" },
+        { key: "Age", label: "Age", type: "number" },
         { key: "Role", label: "Role" },
-        { key: "Department", label: "Department" },
-        { key: "Salary", label: "Salary" },
+        { key: "Department", label: "Department", type:"select", options: ['Tech', 'Creative', 'Operations', 'Finance', 'Human Resources', 'Marketing', 'Product', 'Agile', 'R&D', 'Data', 'Customer Service', 'Sales'] },
+        { key: "Salary", label: "Salary", type: "number" },
         { key: "Location", label: "Location" },
-        { key: "Experience", label: "Experience" },
+        { key: "Experience", label: "Experience", type: "number", postFix: "years" },
         { key: "Status", label: "Status" }
       ],
       rows: [
@@ -54,8 +54,6 @@
         { Name: "Tina", Age: 36, Role: "Sales Manager", Department: "Sales", Salary: 88000, Location: "Los Angeles", Experience: 10, Status: "Active" }
       ]
     });
-
-    console.log(refs);
     
     document.querySelector("button").addEventListener("click", () => {
       refs[0].Age.value +=1;

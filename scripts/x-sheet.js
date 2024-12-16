@@ -1,3 +1,5 @@
+import { Column } from '/scripts/Column.js';
+
 class SheetTable extends HTMLTableElement {
   constructor() {
     super(); // Call the parent constructor
@@ -21,12 +23,18 @@ class SheetTable extends HTMLTableElement {
     console.log('CustomTable removed from the DOM.');
   }
 
+  changedRow(row, key) {
+    console.log('Changed row:', row, key);
+  }
+
   populate({ sheet, columns, rows }) {
 
+    const _columns = columns.map(column => new Column(column));
+    
     const $tr = document.createElement('tr');
 
-    if (columns.length > 0) {
-      columns.forEach(column => {
+    if (_columns.length > 0) {
+      _columns.forEach(column => {
         const $th = document.createElement('th');
         $th.classList.add('px-3', 'py-2');
         $th.textContent = column.label;
@@ -36,7 +44,7 @@ class SheetTable extends HTMLTableElement {
 
       rows.forEach(row => {
         const $tr = document.createElement('tr', { is: 'x-row' });
-        this.rowRefs.push($tr.populate({ sheet, columns, row }));
+        this.rowRefs.push($tr.populate({ sheet, columns: _columns, row }));
         this.tbody.appendChild($tr);
       });
     }
